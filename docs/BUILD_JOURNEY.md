@@ -24,6 +24,22 @@ The screenshot shows the project file tree on the left, the `test_retrieval.py` 
 
 Note on dates. Week 2 was built 30 May 2026, one day after Week 1, not after a full calendar week. The work was done in a single extended overnight session. Future weeks will not all be this compressed.
 
+## Week 3 (31 May 2026, two days after Week 2)
+
+Built the grounded question-and-answer layer on top of the Week 2 retrieval pipeline. The script in `src/aegis/grounded_qa.py` takes a question, retrieves the top five passages from the Chroma index, sends them to Groq with Llama 3.3 70B, and prints an answer that quotes the passages with `[page N]` citations. A system prompt constrains the model to answer only from the retrieved passages, refuse when the passages do not cover the question, and end every answer with the disclaimer line "This is decision-support, not legal advice. Verify with qualified counsel."
+
+A planning detail worth recording. The locked spec was built around 6 to 12 hours per week. The build pace has been faster, with Week 1, Week 2, and Week 3 completed across 29, 30, and 31 May. The dates in this log reflect what actually happened, not the original schedule.
+
+One non-trivial decision during the build. The `llama-index-llms-groq` wrapper that works with the current `llama-index-core==0.14.22` pins an older `transformers` library, which would force a downgrade of `sentence-transformers` and break Week 2 retrieval. The project calls Groq's official Python SDK directly instead. Retrieval still uses LlamaIndex. The LLM call is now `groq_client.chat.completions.create(...)` with a hand-written prompt template. This trades a small convenience for transparency, a simpler dependency tree, and prompt-template control the Week 4 risk classifier needs.
+
+Three sample questions, hand-checked against the source document. Article 13 transparency obligations: retrieved passages from pages 21, 34, 35, 46, 114; answer cited page 21 consistently; honest that the full text of Article 13 was not in the top-5 chunks. General-purpose AI obligations: retrieved passages from pages 26, 27, 31, 67, 85; answer cited pages 31 and 85; covered the authorised-representative requirement. Article 5 prohibited practices: retrieved passages from pages 4, 8, 12, 51; top passage was Article 4 (literacy), not Article 5; the model produced a correct list of four Article 5 prohibitions citing page 51, but used a combination of one partial passage and its training knowledge of the Act. This partial-grounding case is flagged in `tests/test_questions.md` for the Week 8 evaluation harness.
+
+![Week 3 grounded Q&A working](./build_journey/week03_grounded_qa_working.jpg)
+
+The screenshot shows the project file tree with `grounded_qa.py` and `test_questions.md` in place, the editor on the closing lines of the main function, and the terminal output of the Article 5 answer with `[page 51]` citations on each prohibited practice.
+
+Known limitations carrying forward. pypdf still produces letter-spacing artefacts in the retrieved text ("high-r isk", "Ar ticle"); the model is robust to this in its outputs but the chunks remain noisy. Top-5 retrieval is the current setting; Week 8 will test 3, 5, and 10 against a hand-labelled set. The Article 5 partial-grounding case shows the model occasionally fills gaps with general knowledge of the Act; citation accuracy testing in Week 8 will quantify how often this happens. All similarity scores still sit in the 0.35 to 0.50 band.
+
 ## Up next
 
-Week 3, grounded question-and-answer. Connect a real LLM (Groq + Llama) to the existing retrieval pipeline so questions like "What does Article 13 require?" return an answer that quotes the actual retrieved chunks of the Act, with citations.
+Week 4, the risk classifier. Take a plain-language description of an AI system, retrieve relevant articles and Annex III categories, and return a structured classification into one of four tiers (prohibited, high-risk, limited-risk, minimal-risk) with reasoning and citations.

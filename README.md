@@ -8,11 +8,11 @@ The tool is decision-support, not legal advice. Every output carries that discla
 
 ## What works today
 
-Behind the scenes: a working retrieval pipeline. The EU AI Act (144 pages) is split into 296 paragraph-sized chunks, each embedded with sentence-transformers/all-MiniLM-L6-v2. The chunks plus their embeddings live in a local Chroma vector database. A smoke test in `src/aegis/test_retrieval.py` confirms sample questions return the relevant passages of the Act with page numbers attached.
+Behind the scenes: a working retrieval pipeline and a grounded question-and-answer layer on top of it. The EU AI Act (144 pages) is split into 296 paragraph-sized chunks embedded with sentence-transformers/all-MiniLM-L6-v2 and stored in a local Chroma vector database. The script in `src/aegis/grounded_qa.py` takes a question, retrieves the top five passages, sends them to Groq with Llama 3.3 70B, and prints an answer with `[page N]` citations and a disclaimer line. Hand-checked on three sample questions covering Articles 5, 13, and 53.
 
-In the UI: still a Streamlit "Hello World" page. The user-facing features come next. Grounded Q&A is Week 3. Risk classification is Week 4. Obligations report is Week 5.
+In the UI: still a Streamlit "Hello World" page. The user-facing features come next. Risk classification is Week 4. Obligations report is Week 5. Streamlit interface wiring is Week 6.
 
-Known limits at this stage. pypdf introduces letter-spacing artefacts on the CELEX-format Act ("high-r isk", "Ar ticle"). Top-3 similarity scores currently sit between 0.36 and 0.53. The Week 8 evaluation harness will measure these properly against a hand-labelled set, and the upgrade path (better PDF extraction, larger embedding model, or hybrid search with BM25) gets decided then based on measured numbers.
+Known limits at this stage. pypdf introduces letter-spacing artefacts on the CELEX-format Act ("high-r isk", "Ar ticle"). Top-5 similarity scores currently sit between 0.35 and 0.50. The model occasionally fills retrieval gaps with general knowledge of the Act (the Article 5 case is documented in `tests/test_questions.md`). The Week 8 evaluation harness will measure these properly against a hand-labelled set, and the upgrade path (better PDF extraction, larger embedding model, hybrid search with BM25) gets decided then based on measured numbers.
 
 ## How it will work
 

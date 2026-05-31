@@ -12,3 +12,11 @@ llama-index-core==0.14.22
 llama-index-vector-stores-chroma==0.5.5
 llama-index-embeddings-huggingface==0.6.1
 pypdf==5.1.0
+
+# Week 3: grounded Q&A.
+# We call Groq's API through its official Python SDK directly. The
+# llama-index-llms-groq wrapper that works with our current llama-index-core
+# pins an older transformers, which would downgrade sentence-transformers and
+# break Week 2 retrieval. The SDK has lighter deps and lets us write the
+# prompt template ourselves, which Week 4's risk classifier needs anyway.
+groq==1.1.1
