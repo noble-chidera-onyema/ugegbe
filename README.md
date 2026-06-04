@@ -27,7 +27,8 @@ Session-only. Nothing is stored. Inputs are sent to Groq for inference and may b
 ## Author
 
 Noble Chidera Onyema, MSc Applied AI and User Experience, Abertay University.
-Contact via LinkedIn: https://www.linkedin.com/in/noble-chidera-onyema-1a88b53ab/
+onyemanoble1628@gmail.com
+https://www.linkedin.com/in/noble-chidera-onyema-1a88b53ab/
 
 ## Licence
 
