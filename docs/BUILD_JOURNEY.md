@@ -168,3 +168,57 @@ operative Articles. One extra was likely a table-of-contents entry or
 numbering edge case. Does not affect citation correctness on the 11
 audited Articles. Worth investigating during the formal evaluation
 harness.
+
+
+## Week 6 — Streamlit interface (built 3-4 June 2026)
+
+A note on timing. The build plan is organised into 11 units called "weeks." They are units of scope, not calendar weeks. Week 5 and most of Week 6 were built on 3 June 2026, and this closeout was done on 4 June. I am completing the planned work faster than one unit per calendar week. The "Week N" labels track the plan, not elapsed time.
+
+### What this week covered
+
+Week 6 wires the four-screen Streamlit UI to the Week 2-5 backend: an inventory form, a classification result screen, the obligations report, and a grounded Q&A tab. The backend logic already existed and was tested in earlier weeks. This week was about connecting it to something a non-technical user can click through, and making it hold together when things go wrong.
+
+Single-file app.py using st.tabs for the four screens. Shared state across tabs via st.session_state, so a system classified on the Inventory tab carries through to Classification and Obligations without re-entering anything. The backend objects (embedding model, Chroma index, Groq client) load once per process through st.cache_resource rather than on every interaction.
+
+### Design
+
+Institutional document aesthetic, not a typical AI-app look. Lora for headings, Source Sans 3 for body, IBM Plex Mono for citations, all Google Fonts chosen deliberately to avoid the Inter/Roboto default that signals "another LLM wrapper." Tier colours are muted and legal-document-like rather than traffic-light bright. The full rationale is in docs/DESIGN_BRIEF.md.
+
+### The debugging this actually took
+
+This week was not clean. Worth recording honestly because the failures are where the work was.
+
+The Ask tab crashed on first wiring because app.py imported a function name that did not exist. The grounded_qa module exposes lower-level pieces (load_index, retrieve_chunks, ask) rather than a single entry point, so the app had to assemble the retrieve-then-ask pipeline itself.
+
+Four display bugs in sequence, all the same root cause: Streamlit's default dark-mode styling leaking through the light theme. Dark input boxes, faint body text, pale alert boxes, and chat bubbles rendering grey and pink with invisible text. Each fixed by forcing explicit colours on the relevant Streamlit test-id selectors.
+
+The obligation AI-notes first rendered as raw HTML tags instead of styled boxes. Streamlit's markdown renderer treats indented multi-line HTML as a code block and escapes it. Fixed by assembling each card as a single flat HTML string with no indentation.
+
+### The retrieval problem, and why I did not defer it
+
+Once the Q&A tab worked mechanically, the answers were wrong in a specific way. "What does Article 13 require?" returned "the passages do not contain information about Article 13," which is false, Article 13 is in the Act. Diagnosis: semantic search on a question that names a specific Article embeds toward generic obligation language and misses the named Article. The fix reuses the Week 5 mechanism: detect an Article number in the question, retrieve that Article's chunks by metadata filter, fall back to semantic search when no Article is named. Article 13 then returned a correct, cited answer.
+
+A second, harder case: "What makes an AI system high-risk?" This names no Article, so it took the semantic path, and the answer was weak ("not explicitly defined in the provided passages") with a meaningless page 1 citation. Rather than defer this to the Week 8 evaluation harness, I traced it. Two findings from inspecting the retrieved chunks at their similarity scores:
+
+1. Article 6 (the classification rule, page 53) is in the index and does answer the question, but semantic search ranked it seventh, below the top-5 cutoff.
+2. The recital and front-matter chunks (tagged article_number=0, page 1 by the Week 5 splitter) are generic preamble prose that embeds close to almost any conceptual query. They occupied three of the top five slots and cited a meaningless page 1.
+
+The fix has two parts. Exclude the article_number=0 recital chunks from semantic retrieval, which lifts the real Articles into the top results. And add classification-intent routing, so a "high-risk" or "classification" question leads with Article 6. The high-risk question now returns a correct answer quoting Article 6's two-condition test, the Annex III extension, and the Article 7 power for the Commission to amend Annex III by delegated act. Page citations were verified against the source PDF: the Annex III amendment power is Article 7(1), printed page 54, which matches the answer's citation.
+
+Both retrieval paths were verified in the terminal before wiring into the app, to prove the fix without spending the day's limited API quota on UI round-trips.
+
+### Honest scope boundary
+
+The named-Article and classification-intent paths now give correct, well-cited answers. General conceptual questions that name no Article and match no intent pattern still rely on plain semantic search, with recitals excluded. That path's quality across a wide range of questions is what the Week 8 evaluation harness will measure and tune systematically, with a labelled question set rather than one question at a time. Fixing retrieval quality by hand, one question at a time, would produce a green result and teach nothing measurable. The systematic work stays in Week 8 where it belongs.
+
+### Resilience
+
+Every screen runs its backend call inside an error boundary that logs the full traceback to the console and shows the user a plain message with their inputs preserved. This was tested under a real failure: the free-tier Groq daily token limit was reached during heavy testing, and the boundary caught every 429 cleanly rather than freezing the app.
+
+### Model configuration
+
+GROQ_MODEL is now read from the environment, defaulting to llama-3.3-70b-versatile. This satisfies the spec's config-flagged-model requirement and lets the Week 8 evaluation runs use the cheaper llama-3.1-8b-instant without a code change, by setting GROQ_MODEL in .env.
+
+### State at end of Week 6
+
+All four screens work end to end. Classification, the full ten-article obligations report with correct page citations, and both Q&A paths return correct, cited answers. Screenshots: week06_obligations_report.jpg and week06_ask_grounded_answer.jpg in docs/build_journey/.

@@ -10,7 +10,7 @@ The tool is decision-support, not legal advice. Every output carries that discla
 
 Behind the scenes: a working retrieval pipeline, a grounded question-and-answer layer, and a risk classifier. The EU AI Act (144 pages) is split into 296 paragraph-sized chunks embedded with sentence-transformers/all-MiniLM-L6-v2 and stored in a local Chroma vector database. The script in `src/aegis/grounded_qa.py` takes a question, retrieves the top five passages, sends them to Groq with Llama 3.3 70B, and prints an answer with `[page N]` citations. The module at `src/aegis/classify.py` takes a plain-language description of an AI system and returns a structured classification into one of four tiers (prohibited, high-risk, limited-risk, minimal-risk) with confidence, reasoning, citations, and a `needs_human_review` flag. Hand-checked on three sample questions and four sample classifications, all matching their expected tiers.
 
-In the UI: still a Streamlit "Hello World" page. The user-facing features come next. Obligations report is Week 5. Streamlit interface wiring is Week 6.
+In the UI: all four screens work end to end. Inventory takes a plain-language system description, Classification shows the tier with grounded reasoning and cited Articles, Obligations shows the full report for that tier, and Ask answers questions about the legislation with page citations. Built in Week 6.
 
 Known limits at this stage. pypdf introduces letter-spacing artefacts on the CELEX-format Act ("high-r isk", "Ar ticle"). Top-5 retrieval similarity scores sit between 0.35 and 0.50. The classifier returns inconsistent citation formatting (real page numbers when classifying INTO a tier, missing pages when ruling a tier OUT) and `needs_human_review` underfires on borderline cases like AI-assisted CV ranking. All flagged in `tests/test_classifications.md`. The Week 8 evaluation harness will measure these against a hand-labelled set of 30 to 50 cases and the upgrade path (better PDF extraction, larger embedding model, hybrid search with BM25, tighter prompt template) gets decided then on measured numbers.
 
@@ -27,8 +27,7 @@ Session-only. Nothing is stored. Inputs are sent to Groq for inference and may b
 ## Author
 
 Noble Chidera Onyema, MSc Applied AI and User Experience, Abertay University.
-onyemanoble1628@gmail.com
-https://www.linkedin.com/in/noble-chidera-onyema-1a88b53ab/
+Contact via LinkedIn: https://www.linkedin.com/in/noble-chidera-onyema-1a88b53ab/
 
 ## Licence
 
@@ -48,3 +47,18 @@ For any classified system, Aegis now returns an obligations report:
 
 Run with `python src/aegis/obligations.py`. Citation accuracy: 11 of 11
 page references audited against `data/ai_act.pdf`. See `tests/test_obligations.md`.
+
+## Week 6: Streamlit interface (live)
+
+All four screens work end to end in the browser:
+
+- Inventory: describe an AI system in plain language. A privacy warning sits next to the input; nothing is stored.
+- Classification: returns the risk tier with confidence, grounded reasoning, and cited Articles.
+- Obligations: the full obligations report for the tier. Each Article has a page citation, a per-system note explaining why it applies, and a checklist question.
+- Ask: grounded Q&A over the Act. Questions that name an Article retrieve that Article by metadata filter; classification questions lead with Article 6; other questions use semantic search with front-matter excluded. Answers cite pages and decline when the retrieved passages do not support an answer.
+
+A classified system carries across all four tabs through shared session state. Each screen runs inside an error boundary that preserves the user's inputs and shows a plain message on failure rather than crashing. The Groq model is environment-configurable via `GROQ_MODEL`, defaulting to llama-3.3-70b-versatile.
+
+Run with `streamlit run app.py` from the project root.
+
+Known limits, scheduled for the Week 8 evaluation harness: conceptual questions that name no Article rely on semantic retrieval, whose quality across a wide question set has not been measured systematically yet; top-k is fixed at 5; the Article-header detector found 114 headers against 113 operative Articles. All citation claims that appear in screenshots are verified against `data/ai_act.pdf` before publishing.
