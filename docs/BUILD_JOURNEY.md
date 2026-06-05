@@ -265,6 +265,8 @@ Contrast was computed from the actual hex values for every text pairing, not eye
 
 The optional academic-ethics route was initiated, not skipped. The project is a personal portfolio piece, not submitted coursework, so the university has no claim over it on that basis. To keep the option of writing the work up for publication later, an email was sent to a course contact asking for the right ethics process for small user testing, and asking directly whether engaging that process has any bearing on ownership. Approval, if pursued, must be in place before any Week 10 user testing. Status: awaiting guidance.
 
+Update (5 June 2026): The course contact routed the query to the Abertay Ethics Committee; a representative will make contact. An informal authorship steer was given (student first author on joint publications), but the ownership question for a personal, non-coursework project remains open and will be put to the committee directly. No testing until approval is in place. Status: awaiting committee contact.
+
 ### Bugs hit and fixed
 
 Two display-bug recurrences worth recording. Expander bullets first rendered as empty markers with no text: the cause was Python adjacent-string-literal concatenation mangling the markdown, the same class of rendering bug seen in Week 6. Fixed by writing each expander's content as a single triple-quoted string with real line breaks. Separately, a `str_replace` during the build accidentally un-nested the obligations notes loop, caught and fixed before it shipped.
