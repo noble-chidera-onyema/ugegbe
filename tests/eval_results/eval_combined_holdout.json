@@ -1,0 +1,180 @@
+{
+  "H01": {
+    "id": "H01",
+    "expected_tier": "high-risk",
+    "got_tier": "high-risk",
+    "tier_correct": true,
+    "confidence": "high",
+    "needs_human_review": false,
+    "difficulty": "clean",
+    "expected_article": "Annex III point 2, page 127",
+    "citation_article_match": false,
+    "citation_page_match": false,
+    "citations": [
+      "Article 6, page 53"
+    ],
+    "ran_at": "2026-06-20T15:24:06",
+    "model": "default"
+  },
+  "H02": {
+    "id": "H02",
+    "expected_tier": "minimal-risk",
+    "got_tier": "high-risk",
+    "tier_correct": false,
+    "confidence": "high",
+    "needs_human_review": false,
+    "difficulty": "near-miss",
+    "expected_article": "Annex III point 1(a), page 127 (verification exclusion)",
+    "citation_article_match": true,
+    "citation_page_match": true,
+    "citations": [
+      "Annex III, point 1, page 127"
+    ],
+    "ran_at": "2026-06-20T15:24:17",
+    "model": "default"
+  },
+  "H03": {
+    "id": "H03",
+    "expected_tier": "minimal-risk",
+    "got_tier": "minimal-risk",
+    "tier_correct": true,
+    "confidence": "high",
+    "needs_human_review": false,
+    "difficulty": "distractor",
+    "expected_article": "n/a (no Article 5, Annex III, or Article 50 trigger)",
+    "citation_article_match": true,
+    "citation_page_match": null,
+    "citations": [
+      "Article 50, page 82",
+      "Annex III, page not specified in provided passages"
+    ],
+    "ran_at": "2026-06-20T15:24:47",
+    "model": "default"
+  },
+  "H04": {
+    "id": "H04",
+    "expected_tier": "minimal-risk",
+    "got_tier": "high-risk",
+    "tier_correct": false,
+    "confidence": "high",
+    "needs_human_review": false,
+    "difficulty": "boundary",
+    "expected_article": "n/a (no Annex III point catches debt-collection decisions); GDPR Art 22 applies separately",
+    "citation_article_match": false,
+    "citation_page_match": null,
+    "citations": [
+      "Recitals, page 17",
+      "Article 3, page 46",
+      "Article 50, page 82"
+    ],
+    "ran_at": "2026-06-20T15:25:23",
+    "model": "default"
+  },
+  "H05": {
+    "id": "H05",
+    "expected_tier": "limited-risk",
+    "got_tier": "limited-risk",
+    "tier_correct": true,
+    "confidence": "high",
+    "needs_human_review": false,
+    "difficulty": "near-miss",
+    "expected_article": "Article 50(1), page 82 (Annex III point 3(b) considered and excluded on scope)",
+    "citation_article_match": true,
+    "citation_page_match": true,
+    "citations": [
+      "Article 50, page 82"
+    ],
+    "ran_at": "2026-06-20T15:26:03",
+    "model": "default"
+  },
+  "H06": {
+    "id": "H06",
+    "expected_tier": "prohibited",
+    "got_tier": "prohibited",
+    "tier_correct": true,
+    "confidence": "high",
+    "needs_human_review": false,
+    "difficulty": "clean",
+    "expected_article": "Article 5(1)(a), page 51",
+    "citation_article_match": true,
+    "citation_page_match": true,
+    "citations": [
+      "Article 5, page 51",
+      "Recitals, page 29"
+    ],
+    "ran_at": "2026-06-20T15:26:43",
+    "model": "default"
+  },
+  "H07": {
+    "id": "H07",
+    "expected_tier": "minimal-risk",
+    "got_tier": "high-risk",
+    "tier_correct": false,
+    "confidence": "high",
+    "needs_human_review": false,
+    "difficulty": "distractor",
+    "expected_article": "Article 6(1), page 53 (third-party conformity assessment not met under the Machinery Directive cited in AI Act Annex I)",
+    "citation_article_match": true,
+    "citation_page_match": true,
+    "citations": [
+      "Article 6, page 53",
+      "Recitals, page 14"
+    ],
+    "ran_at": "2026-06-20T15:27:16",
+    "model": "default"
+  },
+  "H08": {
+    "id": "H08",
+    "expected_tier": "high-risk",
+    "got_tier": "high-risk",
+    "tier_correct": true,
+    "confidence": "high",
+    "needs_human_review": false,
+    "difficulty": "boundary",
+    "expected_article": "Annex III point 4(a), page 127 (secondary: Article 50(3) transparency)",
+    "citation_article_match": true,
+    "citation_page_match": true,
+    "citations": [
+      "Annex III, point 4(a), page 127",
+      "Article 6(2), page not provided"
+    ],
+    "ran_at": "2026-06-20T15:27:52",
+    "model": "default"
+  },
+  "H09": {
+    "id": "H09",
+    "expected_tier": "limited-risk",
+    "got_tier": "limited-risk",
+    "tier_correct": true,
+    "confidence": "high",
+    "needs_human_review": false,
+    "difficulty": "near-miss",
+    "expected_article": "Article 50(2), page 82",
+    "citation_article_match": true,
+    "citation_page_match": true,
+    "citations": [
+      "Article 50, page 82"
+    ],
+    "ran_at": "2026-06-20T15:28:30",
+    "model": "default"
+  },
+  "H10": {
+    "id": "H10",
+    "expected_tier": "minimal-risk",
+    "got_tier": "minimal-risk",
+    "tier_correct": true,
+    "confidence": "high",
+    "needs_human_review": false,
+    "difficulty": "distractor",
+    "expected_article": "n/a (no Article 5, Annex III, or Article 50 trigger)",
+    "citation_article_match": true,
+    "citation_page_match": null,
+    "citations": [
+      "Article 5, page not specified",
+      "Annex III, page 127",
+      "Article 50, page 82"
+    ],
+    "ran_at": "2026-06-20T15:29:02",
+    "model": "default"
+  }
+}
