@@ -1,15 +1,15 @@
 # Aegis
 
-An EU AI Act readiness tool for Irish small and medium businesses.
+An EU AI Act readiness tool for small businesses, focused on Ireland.
 
 > Working name. "Aegis" is widely used in the AI-compliance space and will be
 > changed to a distinctive, cleared name before public launch.
 
-The Act's main obligations and enforcement powers take effect on 2 August 2026.
-Most compliance tooling for the Act is built for large regulated enterprises
-with legal teams and budgets to match. Aegis is aimed at the businesses those
-tools ignore: the SME owner with one chatbot and a CV screener who needs to know,
-in plain language, whether they are breaking the law.
+The Act's main obligations and enforcement powers take effect in 2026. Most
+compliance tooling for the Act is built for large regulated enterprises with
+legal teams and budgets to match. Aegis is aimed at the businesses those tools
+ignore: the small business owner with one chatbot and a CV screener who needs to
+know, in plain language, whether they are breaking the law.
 
 Aegis takes a plain-language description of an AI system, classifies it against
 the Act's four risk tiers (prohibited, high-risk, limited-risk, minimal-risk),
@@ -66,47 +66,72 @@ self-assessed. The method is the part that makes the number trustworthy:
   two levels (right Article/Annex, and right Article plus right page), and how
   often the human-review flag fires on boundary cases.
 
-Three measured versions were run on the same set and the same independent ground
+Four measured versions were run on the same set and the same independent ground
 truth:
 
-| Metric | v1 | v2 | v3 |
-|---|---|---|---|
-| Tier accuracy | 77.5% | 75.0% | 70.0% |
-| Citation, right Article/Annex | 80.0% | 72.5% | 85.0% |
-| Citation, Article + page | 36.8% | 42.1% | 44.7% |
-| Review flag on boundary cases | 10% | 10% | 0% |
+| Metric | v1 | v2 | v3 | v4 |
+|---|---|---|---|---|
+| Tier accuracy | 77.5% | 75.0% | 70.0% | 70.0% |
+| Citation, right Article/Annex | 80.0% | 72.5% | 85.0% | 72.5% |
+| Citation, Article + page | 36.8% | 42.1% | 44.7% | 47.4% |
+| Limited-risk recall | over-assigned | n/a | 2/7 | 5/7 |
+| Review flag on boundary cases | 10% | 10% | 0% | 10% |
 
-The honest reading: v2 fixed a page-metadata defect; v3's Annex-aware indexing
-and citation convention gave the best citation accuracy of the three, but its
-stricter tier prompt over-corrected and lowered tier accuracy. v3 is a tradeoff,
-not a clean win, and it is documented as one. The evaluation also surfaced that
-the review-flag underfire is a model-overconfidence problem, not a logic problem:
-the model rates boundary cases "high" confidence, so a confidence-based flag
-rarely fires.
+No version is best on every metric. v2 fixed a page-metadata defect. v3's
+Annex-aware indexing and citation convention gave the best Article-level
+citation, but its strict tier prompt over-corrected and pushed genuine
+limited-risk cases into other tiers. v4 rebalanced that step, recovered
+limited-risk recall from 2 of 7 to 5 of 7, and has the best page-level citation,
+but tier accuracy stayed at 70% because the rebalanced prompt now slightly
+over-reaches the other way. v4 is the deployment version: for a decision-support
+tool the user reads the cited passage, so citation quality carries weight
+alongside the tier.
 
-At 40 cases the margin of error is about 13 points, so these are signals, not
-precise benchmarks. Full write-ups: [docs/EVAL_RESULTS_v1.md](./docs/EVAL_RESULTS_v1.md)
-and [docs/EVAL_RESULTS_v2_v3.md](./docs/EVAL_RESULTS_v2_v3.md).
+Iteration stopped at v4 on purpose. The numbers had plateaued, and tuning
+further against the same 40 cases would fit the test rather than improve the
+task. At 40 cases the margin of error is about 13 points, so these are signals,
+not precise benchmarks.
+
+### Held-out validation
+
+To check v4 was not overfit to the 40 development cases, it was run once on 10
+fresh cases it had never seen, labelled the same independent way, no iterating.
+
+| Metric | v4 on the 40 | v4 on the 10 held-out |
+|---|---|---|
+| Tier accuracy | 70.0% | 70.0% |
+| Citation, right Article/Annex | 72.5% | 80.0% |
+| Citation, Article + page | 47.4% | 85.7% |
+
+Tier accuracy on unseen cases matched the development set exactly: 70%. v4
+generalises rather than having been fitted to the 40. The misses were
+consistent and explainable: v4 over-triggers high-risk on systems that resemble
+an Annex III domain but are excluded on a closer reading (for example a
+debt-collection system that is not creditworthiness assessment, or a
+self-assessed machinery safety component). For a compliance tool this is the
+safer direction to err. Full write-ups: `docs/EVAL_RESULTS_v1.md`,
+`docs/EVAL_RESULTS_v2_v3.md`, `docs/EVAL_RESULTS_v4.md`,
+`docs/EVAL_RESULTS_holdout.md`.
 
 ## Known limitations
 
-- Tier accuracy sits around the high 70s on a hard set; the prohibited tier has
-  too few cases to give a stable rate and is treated as a spot check.
-- Citation page precision is the weakest metric; the model names the right
-  provision far more often than the exact page.
-- The review-flag underfire (overconfidence) is not yet solved; the standing
-  caution floor on every classification is the current mitigation.
-- From v2 onward the 40-case set guided changes, so it is a development signal.
-  A fresh held-out set is planned to confirm the chosen version generalises.
+- Tier accuracy sits around the low-to-mid 70s on a hard set; the prohibited
+  tier has too few cases to give a stable rate and is treated as a spot check.
+- v4 over-triggers high-risk on edge cases that resemble an Annex III domain but
+  are excluded on a closer reading. The safer direction for a compliance tool,
+  but a real limitation.
+- Citation page precision is weaker than provision precision; the model names
+  the right provision more often than the exact page.
+- The review-flag underfire is a model-overconfidence problem, confirmed on the
+  held-out set. The standing caution shown on every classification is the
+  current mitigation.
 
 ## Roadmap
 
-- Revert the over-strict tier prompt while keeping v3's indexing and citation
-  gains; re-measure.
-- Address the review flag with structural signals rather than the model's
-  self-reported confidence.
-- Improve retrieval so the governing provision is reliably returned.
-- Add a fresh held-out evaluation set.
+- Improve retrieval so the governing provision is reliably returned; this limits
+  citation accuracy more than the prompt does.
+- Address the review flag with a calibrated confidence signal rather than the
+  model's self-reported confidence.
 - Deploy to EU-resident hosting before any public launch.
 
 ## Privacy
@@ -137,4 +162,4 @@ All Rights Reserved. See LICENSE.
 ## Build journey
 
 Week-by-week history of the project, with screenshots:
-[docs/BUILD_JOURNEY.md](./docs/BUILD_JOURNEY.md).
+`docs/BUILD_JOURNEY.md`.
