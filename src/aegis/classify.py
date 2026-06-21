@@ -169,7 +169,7 @@ def _build_index_in_memory() -> VectorStoreIndex:
     Settings.embed_model = embed_model
 
     client = chromadb.EphemeralClient()
-    collection = client.create_collection(COLLECTION_NAME)
+    collection = client.get_or_create_collection(COLLECTION_NAME)
     vector_store = ChromaVectorStore(chroma_collection=collection)
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
     return VectorStoreIndex.from_documents(

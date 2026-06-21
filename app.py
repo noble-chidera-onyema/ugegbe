@@ -73,6 +73,11 @@ def get_report_generator():
     from src.aegis.obligations import generate_report
     return generate_report
 
+@st.cache_resource(show_spinner=False)
+def get_index():
+    """Build or load the EU AI Act index ONCE per process, shared by all calls."""
+    from src.aegis.classify import load_index
+    return load_index()
 
 @st.cache_resource(show_spinner=False)
 def get_qa():
@@ -675,7 +680,8 @@ def screen_inventory() -> None:
         with st.spinner("Reading the Act and classifying the system..."):
             skeleton_pause(0.5)
             result, err = run_safely(
-                "classify_system", classify_system, st.session_state.system_description
+                "classify_system", classify_system, st.session_state.system_description,
+                None, get_index()
             )
         if err:
             st.session_state.last_error = err
@@ -816,6 +822,8 @@ def screen_classification() -> None:
                 generate_report,
                 clf,
                 st.session_state.system_description,
+                None,
+                get_index(),
             )
         if err:
             st.session_state.last_error = err
