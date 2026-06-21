@@ -1,23 +1,24 @@
-# Aegis
+# Ugegbe
 
 An EU AI Act readiness tool for small businesses, focused on Ireland.
 
-> Working name. "Aegis" is widely used in the AI-compliance space and will be
-> changed to a distinctive, cleared name before public launch.
+Ugegbe is Igbo for "mirror." The tool reflects an AI system back to its owner, so a
+small business can see clearly where it stands under the EU AI Act, in plain
+language, with every answer cited to the law.
 
 The Act's main obligations and enforcement powers take effect in 2026. Most
 compliance tooling for the Act is built for large regulated enterprises with
-legal teams and budgets to match. Aegis is aimed at the businesses those tools
-ignore: the small business owner with one chatbot and a CV screener who needs to
-know, in plain language, whether they are breaking the law.
+legal teams and budgets to match. Ugegbe is aimed at the businesses those tools
+ignore: the owner with one chatbot and a CV screener who needs to know whether
+they are breaking the law.
 
-Aegis takes a plain-language description of an AI system, classifies it against
+Ugegbe takes a plain-language description of an AI system, classifies it against
 the Act's four risk tiers (prohibited, high-risk, limited-risk, minimal-risk),
 and returns the obligations that apply, each with a citation to the specific
 Article or Annex of the Act. It also answers questions about the legislation by
 retrieving the relevant passages and quoting the law rather than paraphrasing it.
 
-Aegis is decision-support, not legal advice. Every output carries that
+Ugegbe is decision-support, not legal advice. Every output carries that
 disclaimer and points the user toward qualified counsel. It is not affiliated
 with the European Union or any Irish authority.
 
@@ -49,7 +50,7 @@ those passages and returns a structured classification with citations.
 
 Built in Python with Streamlit, LlamaIndex, Chroma, and Groq. Runs locally with
 `streamlit run app.py`. Deployment target is Streamlit Community Cloud first,
-then Fly.io Frankfurt for EU data residency before any public launch.
+then Fly.io Frankfurt for EU data residency.
 
 ## Evaluation
 
@@ -117,9 +118,9 @@ safer direction to err. Full write-ups: `docs/EVAL_RESULTS_v1.md`,
 
 - Tier accuracy sits around the low-to-mid 70s on a hard set; the prohibited
   tier has too few cases to give a stable rate and is treated as a spot check.
-- v4 over-triggers high-risk on edge cases that resemble an Annex III domain but
-  are excluded on a closer reading. The safer direction for a compliance tool,
-  but a real limitation.
+- Ugegbe over-triggers high-risk on edge cases that resemble an Annex III domain
+  but are excluded on a closer reading. The safer direction for a compliance
+  tool, but a real limitation.
 - Citation page precision is weaker than provision precision; the model names
   the right provision more often than the exact page.
 - The review-flag underfire is a model-overconfidence problem, confirmed on the
@@ -132,11 +133,11 @@ safer direction to err. Full write-ups: `docs/EVAL_RESULTS_v1.md`,
   citation accuracy more than the prompt does.
 - Address the review flag with a calibrated confidence signal rather than the
   model's self-reported confidence.
-- Deploy to EU-resident hosting before any public launch.
+- Deploy to EU-resident hosting.
 
 ## Privacy
 
-Session-only. Aegis stores nothing; inputs live in the browser session and are
+Session-only. Ugegbe stores nothing; inputs live in the browser session and are
 gone when the tab closes. Inputs are sent to Groq to generate answers. Per
 Groq's policy, inference requests are not retained by default and may be logged
 briefly (up to 30 days) only for error or abuse investigation; data is encrypted
@@ -151,7 +152,8 @@ every control with a visible focus outline; form inputs carry accessible labels.
 
 ## Author
 
-Noble Chidera Onyema, MSc Applied AI and User Experience, Abertay University.
+Built by Noble Chidera Onyema, MSc Applied AI and User Experience, Abertay
+University.
 onyemanoble1628@gmail.com
 https://www.linkedin.com/in/noble-chidera-onyema-1a88b53ab/
 

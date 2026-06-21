@@ -1,5 +1,5 @@
 """
-Ugegbe - EU AI Act readiness for small businesses, Ireland-focused.
+Aegis - EU AI Act Readiness Copilot for Irish SMEs.
 
 Streamlit front end (Week 6). Four screens wired to the Python core built in
 Weeks 2 to 5:
@@ -42,7 +42,7 @@ logger = logging.getLogger("aegis.app")
 
 # --- Page config -----------------------------------------------------------
 st.set_page_config(
-    page_title="Ugegbe - EU AI Act Readiness",
+    page_title="Aegis - EU AI Act Readiness",
     page_icon="\u2696",  # scales of justice, rendered by the browser, not an emoji asset
     layout="centered",
     initial_sidebar_state="collapsed",
@@ -483,8 +483,8 @@ def render_header() -> None:
                 </svg>
             </div>
             <div class="aegis-headtext">
-                <div class="aegis-wordmark">Ugegbe</div>
-                <div class="aegis-tagline">See your AI system the way the EU AI Act sees it</div>
+                <div class="aegis-wordmark">Aegis</div>
+                <div class="aegis-tagline">EU AI Act readiness for Irish SMEs</div>
             </div>
         </div>
         """,
@@ -493,7 +493,7 @@ def render_header() -> None:
     st.markdown(
         """
         <div class="aegis-disclaimer">
-            <strong>Ugegbe is decision-support, not legal advice.</strong>
+            <strong>Aegis is decision-support, not legal advice.</strong>
             It helps you understand which parts of the EU AI Act may apply to
             your systems. Verify any conclusion with qualified counsel before
             acting on it.
@@ -507,8 +507,8 @@ def render_footer() -> None:
     st.markdown(
         """
         <div class="aegis-footer">
-            Ugegbe is an independent portfolio project. It is not affiliated with
-            the European Commission, the AI Office, or any Irish authority. Ugegbe
+            Aegis is an independent portfolio project. It is not affiliated with
+            the European Commission, the AI Office, or any Irish authority. Aegis
             stores nothing; see "Privacy: what happens to what you type" on the
             Inventory tab for how your inputs are handled. Do not enter personal data.
             &copy; 2026 Noble Chidera Onyema. All Rights Reserved.
@@ -616,7 +616,7 @@ PRIVACY_WARNING = (
     '<div class="aegis-privacy">Describe what the system does, not who uses '
     'it. Do not enter personal data (names, emails, anything identifying a '
     'person). Your text is sent to a third-party model (Groq) to generate the '
-    'answer and is not stored by Ugegbe.</div>'
+    'answer and is not stored by Aegis.</div>'
 )
 
 
@@ -624,24 +624,24 @@ PRIVACY_WARNING = (
 def screen_inventory() -> None:
     st.subheader("Describe your AI system")
     st.write(
-        "Describe one system in plain language. Ugegbe classifies its EU AI Act "
+        "Describe one system in plain language. Aegis classifies its EU AI Act "
         "risk tier and lists the obligations that apply."
     )
     with st.expander("How this works"):
         st.markdown(
 """- Describe **what the system does**, not who uses it. One system at a time.
-- Ugegbe reads your description against the Act and assigns a risk tier (prohibited, high-risk, limited-risk, or minimal-risk).
+- Aegis reads your description against the Act and assigns a risk tier (prohibited, high-risk, limited-risk, or minimal-risk).
 - The Classification tab shows the tier and the reasoning. The Obligations tab lists what the tier requires, with page citations you can verify against the Act.
 - This is decision-support, not legal advice."""
         )
 
     with st.expander("Privacy: what happens to what you type"):
         st.markdown(
-"""- **Ugegbe stores nothing.** What you type lives in your browser session only and is gone when you close the tab. There is no account, no database, no server-side record kept by Ugegbe.
+"""- **Aegis stores nothing.** What you type lives in your browser session only and is gone when you close the tab. There is no account, no database, no server-side record kept by Aegis.
 - **Your text is sent to Groq** to generate the classification and answers. Per Groq's policy, inference requests are **not retained by default**; they may be logged briefly (up to 30 days) only when investigating an error or suspected abuse.
 - **In transit and at rest, data is encrypted** (TLS 1.2+ and AES-256), per Groq.
 - **Do not enter personal data**, names, emails, or anything identifying a person. Describe what the system does, not who uses it. You do not need personal data to get a useful classification.
-- Ugegbe is an independent project and is not affiliated with the European Commission, the AI Office, or any Irish authority."""
+- Aegis is an independent project and is not affiliated with the European Commission, the AI Office, or any Irish authority."""
         )
 
     description = st.text_area(
@@ -703,12 +703,12 @@ def screen_classification() -> None:
         return
 
     st.write(
-        "Ugegbe assigned this risk tier and explained why. Read it, then accept "
+        "Aegis assigned this risk tier and explained why. Read it, then accept "
         "it or flag your disagreement below."
     )
     with st.expander("How to read this"):
         st.markdown(
-"""- **Tier** is the EU AI Act risk category Ugegbe assigned to your system.
+"""- **Tier** is the EU AI Act risk category Aegis assigned to your system.
 - **Confidence** is how strongly the retrieved text supported that tier.
 - **Cited Articles** point to where in the Act the reasoning comes from.
 - An automated tier can be wrong even when it looks confident. You stay in control: accept the tier, or flag disagreement, before generating the obligations report."""
@@ -771,7 +771,7 @@ def screen_classification() -> None:
     st.markdown(
         """
         <div class="aegis-disclaimer" style="margin-top:0.8rem;">
-            Ugegbe is decision-support, not legal advice. An automated tier can
+            Aegis is decision-support, not legal advice. An automated tier can
             be wrong even when it looks confident. Confirm this classification
             against the Act and with qualified counsel before relying on it.
         </div>
@@ -944,11 +944,11 @@ def screen_ask() -> None:
     st.subheader("Ask about the Act")
     st.write(
         "Ask a question about the EU AI Act. Answers quote and cite the actual "
-        "legislation, and Ugegbe declines when the text does not support an answer."
+        "legislation, and Aegis declines when the text does not support an answer."
     )
     with st.expander("How this works and what to ask"):
         st.markdown(
-'''- Answers are grounded in the text of the Act and cite the page each claim comes from. If the retrieved text does not support an answer, Ugegbe says so rather than guessing.
+'''- Answers are grounded in the text of the Act and cite the page each claim comes from. If the retrieved text does not support an answer, Aegis says so rather than guessing.
 - Questions that name an Article ("What does Article 13 require?") are answered from that Article directly.
 - Broader questions ("What makes a system high-risk?") are answered from the most relevant passages found.
 - This is decision-support, not legal advice.'''
