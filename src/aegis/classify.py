@@ -116,10 +116,84 @@ This is decision-support for compliance officers, not legal advice. Be cautious.
 
 # --- Index loading ----------------------------------------------------------
 
+def _build_index_in_memory() -> VectorStoreIndex:
+    """
+    Build the index in memory from the source PDF.
+
+    Used when no on-disk Chroma collection exists, which is the case on
+    Streamlit Cloud (the chroma_db/ directory is gitignored and the cloud
+    filesystem is ephemeral). Reuses the chunking logic from build_index so
+    the in-memory index is identical to the on-disk one. Built once per
+    running process; app.py caches the returned index with st.cache_resource.
+    """
+    from llama_index.core import Document, StorageContext
+    from src.aegis.build_index import (
+        DATA_DIR,
+        SOURCE_PDFS,
+        extract_full_text_with_pages,
+        build_char_to_page,
+        find_boundaries,
+        build_preamble_chunks,
+        build_provision_chunks,
+    )
+
+    documents = []
+    for pdf_name in SOURCE_PDFS:
+        pdf_path = DATA_DIR / pdf_name
+        if not pdf_path.exists():
+            continue
+        pages = extract_full_text_with_pages(pdf_path)
+        full_text, char_to_page = build_char_to_page(pages)
+        boundaries = find_boundaries(full_text, char_to_page)
+        if boundaries:
+            chunks = (
+                build_preamble_chunks(full_text, boundaries[0]["start_char"], char_to_page)
+                + build_provision_chunks(full_text, boundaries, char_to_page)
+            )
+        else:
+            chunks = build_preamble_chunks(full_text, len(full_text), char_to_page)
+        for c in chunks:
+            documents.append(Document(
+                text=c["text"],
+                metadata={
+                    "source": pdf_name,
+                    "provision": c["provision"],
+                    "article_number": c["article_number"],
+                    "provision_start_page": c["provision_start_page"],
+                    "page": c["page"],
+                    "sub_chunk_index": c["sub_chunk_index"],
+                },
+            ))
+
+    embed_model = HuggingFaceEmbedding(model_name=EMBEDDING_MODEL)
+    Settings.embed_model = embed_model
+
+    client = chromadb.EphemeralClient()
+    collection = client.create_collection(COLLECTION_NAME)
+    vector_store = ChromaVectorStore(chroma_collection=collection)
+    storage_context = StorageContext.from_defaults(vector_store=vector_store)
+    return VectorStoreIndex.from_documents(
+        documents,
+        storage_context=storage_context,
+        embed_model=embed_model,
+    )
+
+
 def load_index() -> VectorStoreIndex:
-    """Open the Chroma collection."""
-    db = chromadb.PersistentClient(path=str(CHROMA_DB_PATH))
-    collection = db.get_collection(COLLECTION_NAME)
+    """
+    Return the EU AI Act vector index.
+
+    Prefers the on-disk Chroma collection built by build_index.py (fast, used
+    locally). If that collection is not present, which is the case on Streamlit
+    Cloud where chroma_db/ is gitignored, builds the index in memory from the
+    committed source PDF instead. One code path serves both environments.
+    """
+    try:
+        db = chromadb.PersistentClient(path=str(CHROMA_DB_PATH))
+        collection = db.get_collection(COLLECTION_NAME)
+    except Exception:
+        return _build_index_in_memory()
+
     embed_model = HuggingFaceEmbedding(model_name=EMBEDDING_MODEL)
     Settings.embed_model = embed_model
     vector_store = ChromaVectorStore(chroma_collection=collection)

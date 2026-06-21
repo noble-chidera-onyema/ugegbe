@@ -287,27 +287,26 @@ def find_source_passage(index: VectorStoreIndex, article: str) -> tuple[str, int
     """
     Look up the Act's text for a specific Article using metadata filtering.
 
-    Each chunk in the index is tagged with article_number metadata by
-    build_index.py's Article-aware splitter. Citation lookup is therefore
-    a direct metadata query, not a text search. This replaces the earlier
-    heuristic approach (position + density scoring), which was unreliable
-    because chunk boundaries sometimes separated Article headers from
-    their bodies.
+    Reads the Chroma collection that backs the supplied index, rather than
+    opening its own on-disk client. This matters on Streamlit Cloud, where the
+    on-disk chroma_db/ does not exist and the index is built in memory; opening
+    a fresh PersistentClient there would raise NotFoundError. Pulling the
+    collection off the index's vector store means this works in both
+    environments with one code path.
 
-    Returns: (text, page) for the Article's first chunk, or ("", None)
-    if the Article number cannot be parsed or no matching chunk exists.
+    Returns: (text, page) for the Article's first chunk, or ("", None) if the
+    Article number cannot be parsed or no matching chunk exists.
     """
-    db = chromadb.PersistentClient(path=str(CHROMA_DB_PATH))
-    collection = db.get_collection(COLLECTION_NAME)
+    try:
+        collection = index.vector_store._collection
+    except AttributeError:
+        return "", None
 
-    # Parse the Article number out of the string ("Article 9" -> 9).
     try:
         article_number = int(article.replace("Article ", "").strip())
     except ValueError:
         return "", None
 
-    # Metadata query. sub_chunk_index=0 is the first sub-chunk of the
-    # Article, which always contains the header and the opening paragraphs.
     results = collection.get(
         where={
             "$and": [
@@ -319,8 +318,6 @@ def find_source_passage(index: VectorStoreIndex, article: str) -> tuple[str, int
     )
 
     if not results["documents"]:
-        # Fallback: any chunk for this Article. Covers the edge case where
-        # sub_chunk_index numbering got perturbed.
         results = collection.get(
             where={"article_number": {"$eq": article_number}},
             include=["documents", "metadatas"],
@@ -337,26 +334,28 @@ def find_source_passage(index: VectorStoreIndex, article: str) -> tuple[str, int
 
 # --- LLM helper for the per-system explanation -----------------------------
 
-EXPLANATION_SYSTEM_PROMPT = """You are a compliance research assistant. The user has been told their AI system is subject to a specific obligation from the EU AI Act. Your job is to write a short note (2 to 3 sentences) explaining why this particular obligation applies to their specific system description.
+EXPLANATION_SYSTEM_PROMPT = """You are a compliance research assistant. The user's AI system has already been classified into a specific EU AI Act risk tier, and a specific obligation from that tier applies to it. Your job is to write a short note (2 to 3 sentences) explaining why this particular obligation applies to their specific system description.
 
 Rules:
-1. Stay grounded in the user's description. Do not invent details about their system.
-2. Reference the obligation's Article and its general purpose, not the specific text of the Act.
-3. Be concrete. Tell the user what THIS obligation will look like for THEIR system.
-4. If the obligation's relevance is obvious from the description, say so briefly.
-5. Output plain text only. No JSON. No markdown. No preamble.
+1. The tier has already been decided. Write only about why THIS obligation applies under the ALREADY-ASSIGNED tier. Do NOT suggest, imply, or speculate that the system might be a different tier (do not say it "may be high-risk", "could be prohibited", etc.). If you are tempted to question the tier, do not; that is not your task here.
+2. Stay grounded in the user's description. Do not invent details about their system. If the description is thin, keep the note general rather than inventing a risk profile.
+3. Reference the obligation's Article and its general purpose, not the verbatim text of the Act.
+4. Be concrete about what THIS obligation will look like for THEIR system, within the assigned tier.
+5. Output plain text only. No JSON, no markdown, no preamble.
 
-Example output: "Because your system ranks job candidates, the risk management process will need to cover known risks of bias in CV-screening algorithms, and document mitigation steps from the training data onward."
+Example (system assigned high-risk, obligation Article 9): "Because your system ranks job candidates, the risk management process will need to cover known risks of bias in CV-screening algorithms, and document mitigation steps from the training data onward."
 """
 
 
-def explain_obligation(client: Groq, spec: ObligationSpec, system_description: str) -> str:
+def explain_obligation(client: Groq, spec: ObligationSpec, system_description: str,
+                       tier: str) -> str:
     """Generate a 2-3 sentence per-system explanation for a single obligation."""
     user_prompt = (
+        f"Assigned tier (already decided, do not question it): {tier}\n\n"
         f"System description: {system_description}\n\n"
         f"Obligation: {spec.article} - {spec.title}\n"
         f"What the obligation requires: {spec.description}\n\n"
-        f"Write the 2 to 3 sentence note."
+        f"Write the 2 to 3 sentence note, consistent with the assigned tier."
     )
 
     try:
@@ -371,7 +370,6 @@ def explain_obligation(client: Groq, spec: ObligationSpec, system_description: s
         )
         return response.choices[0].message.content.strip()
     except Exception as exc:
-        # Defensive. The hardcoded description is still shown; the per-system note is just missing.
         return f"(Explanation unavailable: {exc})"
 
 
@@ -422,7 +420,7 @@ def generate_report(classification: Classification, system_description: str,
 
     for spec in specs:
         source_text, source_page = find_source_passage(index, spec.article)
-        explanation = explain_obligation(client, spec, system_description)
+        explanation = explain_obligation(client, spec, system_description, classification.tier)
 
         report.obligations.append(Obligation(
             article=spec.article,
