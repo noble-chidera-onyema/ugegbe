@@ -28,6 +28,8 @@ import time
 import traceback
 
 import streamlit as st
+import os
+from dotenv import load_dotenv
 
 # --- Logging (developer-facing, console only) ------------------------------
 # Full tracebacks go to the console so that during development the exact
@@ -90,7 +92,8 @@ def get_qa():
     wrapper only does per-question work (retrieve + ask)."""
     from src.aegis.grounded_qa import Groq, retrieve_for_question, ask, TOP_K
 
-    client = Groq()
+    load_dotenv()
+    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
     index = get_index()
 
     def answer_question(question: str) -> str:

@@ -60,6 +60,7 @@ SYSTEM_PROMPT = """You are a research assistant for the EU AI Act. Answer questi
 Rules:
 1. Quote or closely paraphrase from the passages. Do not invent text.
 2. After each factual claim, cite the page in square brackets like [page 42].
+2a. Cite ONLY the page. Never write `Passage 1` or `Passage 2`. The passage labels are internal; the reader sees pages only.
 3. If the passages do not contain enough information, say so plainly. Do not guess. Do not fall back on general knowledge.
 4. Do not provide legal advice. End every answer with the disclaimer line below.
 5. Be concise. Two or three short paragraphs is usually enough.
@@ -216,7 +217,7 @@ def build_user_prompt(question: str, retrieved_nodes) -> str:
     for i, node in enumerate(retrieved_nodes, start=1):
         page = node.metadata.get("page", "?")
         text = node.text.replace("\n", " ").strip()
-        chunks_text.append(f"[Passage {i}, page {page}]\n{text}")
+        chunks_text.append(f"[page {page}]\n{text}")
 
     chunks_block = "\n\n".join(chunks_text)
 
