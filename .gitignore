@@ -66,3 +66,5 @@ htmlcov/
 
 # Raw, unsorted screenshots (only curated ones go in docs/build_journey/)
 **/raw_screenshots/
+# Throwaway PowerShell edit scripts
+*.ps1
