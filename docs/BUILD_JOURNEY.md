@@ -295,7 +295,7 @@ Ugegbe cleared every register checked. UK IPO returned no marks. EUIPO returned 
 
 Ugegbe is Igbo for "mirror". The tool reflects an AI system back to its owner so they can see where it stands under the law. The name carries the function, and it is mine, not borrowed from the crowded end of the register.
 
-No trade mark was registered. That is premature for a portfolio project. Clearance plus unregistered use is enough while building. A UK IPO self-filing is the cheap route later if it is ever warranted.
+
 
 ### What changed in the code, and what deliberately did not
 
@@ -309,7 +309,7 @@ The GitHub repository was renamed in place from `aegis` to `ugegbe`, keeping the
 
 The app is live at https://ugegbe.streamlit.app.
 
-Getting there meant fixing a chain of problems, each one uncovering the next. Worth recording, because the fixes are the interesting part.
+Getting there meant fixing a chain of problems, each one uncovering the next. WHhich i believe was worth recording.
 
 The index is gitignored. `chroma_db/` is excluded from the repo because it is a regenerated build artefact. Locally that is fine, the index is built on disk by `build_index.py`. On the cloud the directory does not exist, so every screen that opened the Chroma collection threw `NotFoundError: Collection ai_act_v1 does not exist`. The source PDF is committed, so the fix was to build the index in memory from the PDF when the on-disk collection is absent, using `chromadb.EphemeralClient()`. One `load_index` now tries the on-disk collection first and falls back to an in-memory build. Local and cloud share one code path.
 
