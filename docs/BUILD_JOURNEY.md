@@ -309,7 +309,7 @@ The GitHub repository was renamed in place from `aegis` to `ugegbe`, keeping the
 
 The app is live at https://ugegbe.streamlit.app.
 
-Getting there meant fixing a chain of problems, each one uncovering the next. WHhich i believe was worth recording.
+Getting there meant fixing a chain of problems, each one uncovering the next. Which i believe was worth recording.
 
 The index is gitignored. `chroma_db/` is excluded from the repo because it is a regenerated build artefact. Locally that is fine, the index is built on disk by `build_index.py`. On the cloud the directory does not exist, so every screen that opened the Chroma collection threw `NotFoundError: Collection ai_act_v1 does not exist`. The source PDF is committed, so the fix was to build the index in memory from the PDF when the on-disk collection is absent, using `chromadb.EphemeralClient()`. One `load_index` now tries the on-disk collection first and falls back to an in-memory build. Local and cloud share one code path.
 
