@@ -51,7 +51,6 @@ Thumbs.db
 .streamlit/secrets.toml
 
 # Vector store (regenerated locally)
-chroma_db/
 vector_store/
 *.faiss
 
